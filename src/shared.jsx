@@ -106,8 +106,11 @@ export function Inp({ label, val, onChange, type = "text", onEnter, ph, disabled
           ...S.field,
           fontSize: isDate ? 11 : 15,
           padding: isDate ? "0 6px" : "0 14px",
+          height: 46,
+          overflow: "hidden",
           opacity: disabled ? 0.5 : 1,
           cursor: disabled ? "not-allowed" : "text",
+          WebkitAppearance: isDate ? "none" : undefined,
         }}
         onFocus={ev => {
           ev.target.style.borderColor = T.pr
