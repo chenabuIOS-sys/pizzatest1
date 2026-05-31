@@ -1,16 +1,15 @@
 import { useState, useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-import { T, S, MN, Card, Stat, IRow, PageTitle, G2, Empty, money, bizDay, dayNm } from '../shared'
+import { T, S, MN, Card, Stat, IRow, PageTitle, G2, Empty, InfoBanner, money, bizDay, dayNm } from '../shared'
 
 export function Dash({ txs, daily }) {
   const tod = bizDay()
   const [sm, setSm] = useState(tod.slice(0, 7))
 
-  const mTxs = useMemo(() => txs.filter(t => t.date.startsWith(sm)), [txs, sm])
-  const inc   = useMemo(() => mTxs.filter(t => t.type === "income" ).reduce((s, t) => s + Number(t.amount), 0), [mTxs])
-  const exp   = useMemo(() => mTxs.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0), [mTxs])
-
-  const mDly  = useMemo(() => daily.filter(r => r.date.startsWith(sm)), [daily, sm])
+  const mTxs   = useMemo(() => txs.filter(t => t.date.startsWith(sm)), [txs, sm])
+  const inc    = useMemo(() => mTxs.filter(t => t.type === "income" ).reduce((s, t) => s + Number(t.amount), 0), [mTxs])
+  const exp    = useMemo(() => mTxs.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0), [mTxs])
+  const mDly   = useMemo(() => daily.filter(r => r.date.startsWith(sm)), [daily, sm])
   const diners = mDly.reduce((s, r) => s + Number(r.diners || 0), 0)
 
   const todayReport = daily.find(r => r.date === tod)
@@ -35,6 +34,8 @@ export function Dash({ txs, daily }) {
     return Object.entries(cats).sort((a, b) => b[1] - a[1]).slice(0, 5)
   }, [mTxs])
 
+  const profit = inc - exp
+
   return (
     <div>
       <PageTitle
@@ -45,41 +46,30 @@ export function Dash({ txs, daily }) {
             type="month"
             value={sm}
             onChange={ev => setSm(ev.target.value)}
-            style={{ ...S.field, width: 130, height: 36, fontSize: 12, padding: "0 8px" }}
+            style={{ ...S.field, width: 128, height: 36, fontSize: 12, padding: "0 8px" }}
           />
         }
       />
 
-      {/* ─── Today's report status ─── */}
-      <div style={{
-        background: todayReport ? T.gn2 : T.or2,
-        border: "1px solid " + (todayReport ? "rgba(46,204,113,0.3)" : "rgba(243,156,18,0.3)"),
-        borderRadius: 12, padding: "12px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12,
-      }}>
-        <span style={{ fontSize: 22 }}>{todayReport ? "✅" : "⚠️"}</span>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: T.tx }}>
-            {todayReport ? "דוח יומי הוגש היום" : "דוח יומי לא הוגש עדיין"}
-          </div>
-          {todayReport ? (
-            <div style={{ fontSize: 11, color: T.tx2, marginTop: 2 }}>
-              {todayReport.diners} בונים · מזומן {money(todayReport.cash || 0)} · אשראי {money(todayReport.credit || 0)}
-            </div>
-          ) : (
-            <div style={{ fontSize: 11, color: T.tx3, marginTop: 2 }}>לחץ על "דוח" להוספה</div>
-          )}
-        </div>
-      </div>
+      {/* Today's report status */}
+      <InfoBanner
+        ok={!!todayReport}
+        icon={todayReport ? "✅" : "⚠️"}
+        title={todayReport ? "דוח יומי הוגש היום" : "דוח יומי לא הוגש עדיין"}
+        sub={todayReport
+          ? `${todayReport.diners} בונים · מזומן ${money(todayReport.cash || 0)} · אשראי ${money(todayReport.credit || 0)}`
+          : 'לחץ על "דוח יומי" להוספה'}
+      />
 
-      {/* ─── KPI stats ─── */}
+      {/* KPI stats */}
       <G2 gap={12}>
-        <Stat label="הכנסות"  val={money(inc)}       icon="📈" color={T.gn}                   bg={T.gn2} />
-        <Stat label="הוצאות"  val={money(exp)}       icon="📉" color={T.rd}                   bg={T.rd2} />
-        <Stat label="רווח"    val={money(inc - exp)} icon="💰" color={inc-exp >= 0 ? T.gn : T.rd} bg={inc-exp >= 0 ? T.gn2 : T.rd2} />
-        <Stat label="בונים"   val={diners}           icon="🍽" color={T.or}                   bg={T.or2} />
+        <Stat label="הכנסות"  val={money(inc)}    icon="📈" color={T.gn}                    bg={T.gn2} />
+        <Stat label="הוצאות"  val={money(exp)}    icon="📉" color={T.rd}                    bg={T.rd2} />
+        <Stat label="רווח"    val={money(profit)} icon="💰" color={profit >= 0 ? T.gn : T.rd} bg={profit >= 0 ? T.gn2 : T.rd2} />
+        <Stat label="בונים"   val={diners}        icon="🍽" color={T.or}                    bg={T.or2} />
       </G2>
 
-      {/* ─── Last report card ─── */}
+      {/* Last report */}
       {lastRep && (
         <div style={{ marginTop: 16 }}>
           <Card title={"דוח אחרון · " + dayNm(lastRep.date)}>
@@ -93,37 +83,58 @@ export function Dash({ txs, daily }) {
         </div>
       )}
 
-      {/* ─── 6-month bar chart ─── */}
+      {/* 6-month chart */}
       <div style={{ marginTop: 16 }}>
         <Card title="הכנסות מול הוצאות – 6 חודשים">
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={chartData} barGap={4} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
-              <XAxis dataKey="name" stroke={T.tx3} tick={{ fontSize: 10, fill: T.tx2 }} />
-              <YAxis stroke={T.tx3} tick={{ fontSize: 10, fill: T.tx2 }} tickFormatter={v => v > 999 ? (v/1000).toFixed(0)+"k" : v} />
+          <ResponsiveContainer width="100%" height={190}>
+            <BarChart data={chartData} barGap={4} margin={{ top: 6, right: 4, left: -18, bottom: 0 }}>
+              <XAxis dataKey="name" stroke={T.tx3} tick={{ fontSize: 11, fill: T.tx2, fontFamily: "Heebo" }} axisLine={false} tickLine={false} />
+              <YAxis stroke={T.tx3} tick={{ fontSize: 10, fill: T.tx3, fontFamily: "Heebo" }} tickFormatter={v => v > 999 ? (v / 1000).toFixed(0) + "k" : v} axisLine={false} tickLine={false} />
               <Tooltip
                 formatter={(v, n) => [money(v), n === "inc" ? "הכנסות" : "הוצאות"]}
-                contentStyle={{ background: T.card2, border: "1px solid "+T.border, borderRadius: 10, color: T.tx, fontSize: 12 }}
+                contentStyle={{ background: T.card2, border: "1px solid " + T.border, borderRadius: 12, color: T.tx, fontSize: 12, fontFamily: "Heebo", direction: "rtl" }}
+                cursor={{ fill: "rgba(255,255,255,0.04)", radius: 6 }}
               />
-              <Bar dataKey="inc" fill={T.gn} radius={[4,4,0,0]} />
-              <Bar dataKey="exp" fill={T.rd} radius={[4,4,0,0]} />
+              <Bar dataKey="inc" fill={T.gn}  radius={[5,5,0,0]} />
+              <Bar dataKey="exp" fill={T.rd}  radius={[5,5,0,0]} />
             </BarChart>
           </ResponsiveContainer>
+          <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: T.tx2 }}>
+              <div style={{ width: 10, height: 10, borderRadius: 3, background: T.gn }} />הכנסות
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: T.tx2 }}>
+              <div style={{ width: 10, height: 10, borderRadius: 3, background: T.rd }} />הוצאות
+            </div>
+          </div>
         </Card>
       </div>
 
-      {/* ─── Top expense categories ─── */}
+      {/* Top expense categories */}
       {topCats.length > 0 && (
         <div style={{ marginTop: 16 }}>
           <Card title="הוצאות לפי ספק">
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {topCats.map(([cat, amt]) => (
-                <div key={cat} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 14px", background: T.card2, borderRadius: 10, border: "1px solid "+T.border }}>
-                  <span style={{ fontSize: 13, color: T.tx }}>{cat}</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 60, height: 4, background: T.border, borderRadius: 2 }}>
-                      <div style={{ height: "100%", width: (exp > 0 ? Math.min(amt/exp*100, 100) : 0)+"%", background: T.rd, borderRadius: 2 }} />
+                <div key={cat} style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "12px 14px", background: T.card2,
+                  borderRadius: 12, border: "1px solid " + T.border,
+                }}>
+                  <span style={{ fontSize: 13, color: T.tx, fontWeight: 500 }}>{cat}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 64, height: 5, background: T.border, borderRadius: 3, overflow: "hidden" }}>
+                      <div style={{
+                        height: "100%",
+                        width: (exp > 0 ? Math.min(amt / exp * 100, 100) : 0) + "%",
+                        background: `linear-gradient(90deg, ${T.rd}, ${T.pr})`,
+                        borderRadius: 3,
+                        transition: "width .6s ease",
+                      }} />
                     </div>
-                    <span style={{ fontWeight: 700, color: T.rd, minWidth: 60, textAlign: "left" }}>{money(amt)}</span>
+                    <span style={{ fontWeight: 700, color: T.rd, minWidth: 64, textAlign: "left", fontSize: 13 }}>
+                      {money(amt)}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -134,7 +145,9 @@ export function Dash({ txs, daily }) {
 
       {txs.length === 0 && daily.length === 0 && (
         <div style={{ marginTop: 16 }}>
-          <Card><Empty text="אין נתונים עדיין – הוסף דוח יומי כדי להתחיל" icon="🚀" /></Card>
+          <Card>
+            <Empty text="אין נתונים עדיין – הוסף דוח יומי כדי להתחיל" icon="🚀" />
+          </Card>
         </div>
       )}
     </div>

@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { T, MN, Card, Stat, G2, Empty, PageTitle, money, bizDay, dayNm } from '../shared'
+import { T, S, MN, Card, Stat, G2, Empty, PageTitle, SegTabs, money, bizDay, dayNm } from '../shared'
 
 const PERIODS = [
-  { id: "day",    label: "יום",      days: 0 },
-  { id: "week",   label: "שבוע",     days: 6 },
-  { id: "month",  label: "חודש",     days: 30 },
+  { id: "day",    label: "יום",     days: 0 },
+  { id: "week",   label: "שבוע",    days: 6 },
+  { id: "month",  label: "חודש",    days: 30 },
   { id: "6month", label: "חצי שנה", days: 180 },
-  { id: "year",   label: "שנה",      days: 365 },
+  { id: "year",   label: "שנה",     days: 365 },
 ]
 
 export function MyHours({ cu, hrs, emps }) {
@@ -15,10 +15,25 @@ export function MyHours({ cu, hrs, emps }) {
 
   if (!linkedEmp) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh", gap: 16, textAlign: "center" }}>
-        <div style={{ fontSize: 64 }}>👤</div>
-        <h2 style={{ color: T.tx, margin: 0 }}>שלום, {cu.name}!</h2>
-        <p style={{ color: T.tx2, margin: 0 }}>החשבון שלך לא מקושר לעובד. פנה למנהל.</p>
+      <div style={{
+        display: "flex", flexDirection: "column", alignItems: "center",
+        justifyContent: "center", minHeight: "60vh", gap: 18, textAlign: "center",
+        padding: 24,
+      }}>
+        <div style={{
+          width: 80, height: 80, borderRadius: 24,
+          background: T.card2, border: "1px solid " + T.border,
+          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36,
+        }}>
+          👤
+        </div>
+        <div>
+          <h2 style={{ color: T.tx, margin: "0 0 8px", fontSize: 22, fontWeight: 800 }}>שלום, {cu.name}!</h2>
+          <p style={{ color: T.tx2, margin: 0, fontSize: 14, lineHeight: 1.6 }}>
+            החשבון שלך לא מקושר לעובד.<br />
+            פנה למנהל לקישור.
+          </p>
+        </div>
       </div>
     )
   }
@@ -44,51 +59,66 @@ export function MyHours({ cu, hrs, emps }) {
   return (
     <div>
       <PageTitle
-        title={"שלום, " + linkedEmp.name + "!"}
-        sub={linkedEmp.role + " · " + money(linkedEmp.hourlyRate) + "/שעה"}
+        title={"שלום, " + linkedEmp.name.split(" ")[0] + "!"}
+        sub={linkedEmp.role + " · " + money(linkedEmp.hourlyRate) + " לשעה"}
       />
 
       {/* Period selector */}
-      <div style={{ display: "flex", background: T.card, borderRadius: 12, padding: 4, gap: 3, border: "1px solid "+T.border, marginBottom: 16, boxShadow: T.sh }}>
-        {PERIODS.map(x => (
-          <button
-            key={x.id}
-            onClick={() => setPeriod(x.id)}
-            style={{ flex: 1, border: "none", borderRadius: 9, padding: "9px 4px", background: period === x.id ? T.pr : "transparent", color: period === x.id ? "#fff" : T.tx2, fontFamily: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "background .15s" }}
-          >
-            {x.label}
-          </button>
-        ))}
+      <div style={{ marginBottom: 20 }}>
+        <SegTabs
+          options={PERIODS.map(x => ({ id: x.id, label: x.label }))}
+          value={period}
+          onChange={setPeriod}
+        />
       </div>
 
+      {/* Stats */}
       <G2 gap={12}>
-        <Stat label={"שעות " + p.label} val={periodHours.toFixed(1)}  icon="⏱" color={T.pr} bg={T.rd2} />
-        <Stat label={"שכר " + p.label}  val={money(periodSalary)}     icon="💰" color={T.gn} bg={T.gn2} />
-        <Stat label='סה"כ שעות'          val={allHours.toFixed(1)}     icon="📊" color={T.or} bg={T.or2} />
-        <Stat label='סה"כ שכר'           val={money(allSalary)}        icon="💵" color={T.pu} bg={T.pu2} />
+        <Stat label={"שעות – " + p.label} val={periodHours.toFixed(1)}  icon="⏱" color={T.pr} bg={T.pr2} />
+        <Stat label={"שכר – " + p.label}  val={money(periodSalary)}     icon="💰" color={T.gn} bg={T.gn2} />
+        <Stat label='סה"כ שעות'            val={allHours.toFixed(1)}     icon="📊" color={T.or} bg={T.or2} />
+        <Stat label='סה"כ שכר'             val={money(allSalary)}        icon="💵" color={T.pu} bg={T.pu2} />
       </G2>
 
-      <div style={{ marginTop: 16 }}>
-        <Card title={"פירוט – " + p.label}>
+      {/* Daily breakdown */}
+      <div style={{ marginTop: 20 }}>
+        <Card title={"פירוט – " + p.label} accent={T.pr}>
           {dailyList.length === 0 ? (
-            <Empty text="אין שעות בתקופה זו" />
+            <Empty text="אין שעות בתקופה זו" icon="⏱" />
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {dailyList.map(day => (
-                <div key={day.date} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", background: T.card2, borderRadius: 10, border: "1px solid "+T.border }}>
-                  <div>
-                    <div style={{ fontWeight: 700, color: T.or, fontSize: 14 }}>{day.hours.toFixed(1)} שעות</div>
-                    <div style={{ fontSize: 12, color: T.tx2, marginTop: 2 }}>{dayNm(day.date)}</div>
+              {dailyList.map(day => {
+                const daySalary = day.hours * linkedEmp.hourlyRate
+                return (
+                  <div key={day.date} style={{
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    padding: "14px 16px",
+                    background: T.card2, borderRadius: 12, border: "1px solid " + T.border,
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 700, color: T.or, fontSize: 15, lineHeight: 1 }}>
+                        {day.hours.toFixed(1)} שעות
+                      </div>
+                      <div style={{ fontSize: 12, color: T.tx2, marginTop: 4 }}>{dayNm(day.date)}</div>
+                    </div>
+                    <div style={{ textAlign: "left" }}>
+                      <div style={{ fontWeight: 800, color: T.gn, fontSize: 15 }}>{money(daySalary)}</div>
+                    </div>
                   </div>
-                  <span style={{ fontWeight: 700, color: T.gn }}>{money(day.hours * linkedEmp.hourlyRate)}</span>
-                </div>
-              ))}
+                )
+              })}
 
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 14px", background: "rgba(46,204,113,0.08)", borderRadius: 10, border: "1px solid rgba(46,204,113,0.2)", marginTop: 4 }}>
-                <span style={{ fontWeight: 700, color: T.tx }}>סה"כ {p.label}</span>
+              {/* Total */}
+              <div style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "16px 18px",
+                background: "linear-gradient(135deg, rgba(0,200,120,0.10), rgba(0,200,120,0.03))",
+                borderRadius: 14, border: "1px solid rgba(0,200,120,0.22)", marginTop: 4,
+              }}>
+                <span style={{ fontWeight: 700, color: T.tx, fontSize: 14 }}>סה"כ {p.label}</span>
                 <div style={{ textAlign: "left" }}>
-                  <div style={{ fontWeight: 800, color: T.gn }}>{money(periodSalary)}</div>
-                  <div style={{ fontSize: 11, color: T.tx2 }}>{periodHours.toFixed(1)} שעות</div>
+                  <div style={{ fontWeight: 900, color: T.gn, fontSize: 18 }}>{money(periodSalary)}</div>
+                  <div style={{ fontSize: 11, color: T.tx2, marginTop: 2 }}>{periodHours.toFixed(1)} שעות</div>
                 </div>
               </div>
             </div>

@@ -3,30 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0D0F18" />
-    <title>פיצה טוסקנה - מערכת ניהול</title>
+    <meta name="theme-color" content="#07090F" />
+    <title>פיצה טוסקנה – מערכת ניהול</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <style>
       *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-      body { margin: 0; overflow-x: hidden; background: #0D0F18; font-family: 'Heebo', sans-serif; }
-      input, select, button { font-family: inherit; font-size: 15px; }
-      ::-webkit-scrollbar { width: 4px; }
-      ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
-      @keyframes fadeInUp {
-        from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-        to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-      }
-      @keyframes slideInRight {
-        from { transform: translateX(100%); }
-        to   { transform: translateX(0); }
-      }
+      html { scroll-behavior: smooth; }
+      body { margin: 0; overflow-x: hidden; background: #07090F; font-family: 'Heebo', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+      input, select, button, textarea { font-family: inherit; }
+      ::selection { background: rgba(230,57,70,0.3); color: #fff; }
+      ::-webkit-scrollbar { width: 3px; height: 3px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+      @keyframes fadeIn    { from { opacity: 0 } to { opacity: 1 } }
+      @keyframes fadeInUp  { from { opacity: 0; transform: translateX(-50%) translateY(16px) } to { opacity: 1; transform: translateX(-50%) translateY(0) } }
+      @keyframes slideInRight { from { transform: translateX(100%) } to { transform: translateX(0) } }
+      @keyframes pageIn    { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
+      @keyframes toastIn   { from { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.9) } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1) } }
+      @keyframes scaleIn   { from { opacity: 0; transform: scale(0.94) } to { opacity: 1; transform: scale(1) } }
+      @keyframes pulse     { 0%,100% { opacity: 1 } 50% { opacity: 0.5 } }
+      @keyframes spin      { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+
       @media print {
         .no-print { display: none !important; }
-        body { background: #fff; color: #000; }
+        body { background: #fff !important; color: #000 !important; }
+        * { color: #000 !important; background: transparent !important; box-shadow: none !important; border-color: #ccc !important; }
       }
     </style>
   </head>
