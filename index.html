@@ -14,6 +14,26 @@
       *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
       body { margin: 0; overflow-x: hidden; background: #0D0F18; font-family: 'Heebo', sans-serif; }
       input, select, button { font-family: inherit; font-size: 15px; }
+      input[type="date"], input[type="month"] {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 46px !important;
+        min-height: 46px !important;
+        max-height: 46px !important;
+        line-height: 46px;
+        overflow: hidden;
+      }
+      input[type="date"]::-webkit-date-and-time-value,
+      input[type="month"]::-webkit-date-and-time-value {
+        text-align: right;
+        margin: 0;
+      }
+      input[type="date"]::-webkit-calendar-picker-indicator,
+      input[type="month"]::-webkit-calendar-picker-indicator {
+        opacity: 0.5;
+        filter: invert(1);
+        cursor: pointer;
+      }
       ::-webkit-scrollbar { width: 4px; }
       ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
       @keyframes fadeInUp {
@@ -29,7 +49,7 @@
         body { background: #fff; color: #000; }
       }
     </style>
-    <script type="module" crossorigin src="/pizzatest1/assets/index-mpmZ1Wr6.js"></script>
+    <script type="module" crossorigin src="/assets/index-D9yKakXh.js"></script>
   </head>
   <body>
     <div id="root"></div>
